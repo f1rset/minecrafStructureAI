@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image to Minecraft Schematic</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f0f0f0; }
+        .container { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; }
+        input[type="file"] { margin: 1rem 0; }
+        button { background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #45a049; }
+        .loader { display: none; margin-top: 10px; color: #666; }
+    </style>
+    <script>
+        function showLoader() {
+            document.getElementById('loader').style.display = 'block';
+            document.getElementById('btn').disabled = true;
+            document.getElementById('btn').innerText = "Processing (Wait ~30s)...";
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Image to Minecraft</h1>
+        <p>Upload an image to generate a 3D Minecraft Structure</p>
+        
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div style="color: red; margin-bottom: 10px;">{{ messages[0] }}</div>
+            {% endif %}
+        {% endwith %}
+
+        <form method="post" enctype="multipart/form-data" onsubmit="showLoader()">
+            <input type="file" name="image" accept="image/*" required>
+            <br>
+            <button type="submit" id="btn">Generate Schematic</button>
+        </form>
+        <div id="loader" class="loader">Generating 3D model and voxelizing... please wait.</div>
+    </div>
+</body>
+</html>
