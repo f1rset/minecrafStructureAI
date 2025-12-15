@@ -1,5 +1,4 @@
 import os
-import shutil
 import subprocess
 import requests
 import torch
@@ -14,11 +13,8 @@ from flask import (
     url_for,
 )
 
-# 3D Processing Imports
 import fal_client
 import trimesh
-
-# Image Generation Imports
 from diffusers import StableDiffusionPipeline
 from rembg import remove
 
@@ -33,8 +29,6 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 if not os.environ.get("FAL_KEY"):
     print("WARNING: FAL_KEY environment variable is not set.")
 
-# --- 1. Load Stable Diffusion Model (Global Scope) ---
-# We load this once to avoid reloading 4GB+ of weights on every request.
 print("[+] Loading Stable Diffusion Pipeline...")
 MODEL_ID = "Lykon/dreamshaper-8"
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -47,16 +41,12 @@ try:
     )
     if device == "cuda":
         pipe.to("cuda")
-        # Optimizations for VRAM
         pipe.enable_model_cpu_offload()
         pipe.enable_attention_slicing()
     print("[+] Model loaded successfully.")
 except Exception as e:
     print(f"[!] Failed to load Stable Diffusion: {e}")
     pipe = None
-
-# --- 2. Helper Functions ---
-
 
 def generate_asset_from_text(prompt: str, filename: str) -> Path:
     """Generates an image from text using SD + Rembg."""
@@ -96,9 +86,7 @@ def glb_to_stl(glb_path: Path) -> Path:
 
 
 def stl_to_struct(stl_path: Path, out_dir: Path, resolution=128):
-    """Runs binvox and renames output to .struct."""
     binvox_path = Path(__file__).parent / "binvox"
-    # Windows typically needs binvox.exe, Linux needs binvox
     if not binvox_path.exists():
         binvox_path = Path(__file__).parent / "binvox.exe"
 
@@ -113,23 +101,17 @@ def stl_to_struct(stl_path: Path, out_dir: Path, resolution=128):
         stderr=subprocess.PIPE,
     )
 
-    # binvox generates [filename].schematic in the same folder as input
     generated_schem = stl_path.with_suffix(".schematic")
 
     if generated_schem.exists():
         return generated_schem
     return None
 
-
-# --- 3. Routes ---
-
-
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
         img_path = None
 
-        # A. Handle Text Prompt
         if "prompt" in request.form and request.form["prompt"].strip():
             prompt_text = request.form["prompt"]
             safe_name = "".join(x for x in prompt_text if x.isalnum())[:10]
@@ -140,7 +122,6 @@ def index():
                 flash(f"Generation Error: {e}")
                 return redirect(request.url)
 
-        # B. Handle File Upload
         elif "image" in request.files:
             file = request.files["image"]
             if file.filename:
@@ -151,7 +132,6 @@ def index():
             flash("No image or prompt provided.")
             return redirect(request.url)
 
-        # C. Process Image -> 3D -> .struct
         try:
             # 1. Upload to Fal.ai (Hunyuan3D)
             print("[+] Uploading to Fal.ai...")
@@ -196,8 +176,6 @@ def uploaded_file(filename):
     """Serves files from the upload directory so we can preview them."""
     return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 
-
-# --- 4. Templates (Embedded for simplicity) ---
 
 INDEX_TEMPLATE = """
 <!doctype html>

@@ -27,6 +27,11 @@ Everything you need know about usage is:
 1. Source virtual environment with all installed dependencies
 2. Simply run ```python app.py``` inside model/
 
+Note: You need fal.ai api key to be exported before run:
+
+```bash
+export FAL_KEY=your_key
+```
 ### Important
 
 To use scematics in minecraft, put them to the 
