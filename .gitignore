@@ -1,4 +1,5 @@
-tests/
+test/
 .venv
 __pycache__/
 ai_api/img2model/dust3r/checkpoints
+uploads/

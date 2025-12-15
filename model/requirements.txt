@@ -1,0 +1,12 @@
+torch
+diffusers
+transformers
+accelerate
+rembg
+pillow
+onnxruntime
+requests
+flask
+fal-client
+trimesh
+numpy
